@@ -9,7 +9,7 @@ public class MyTile : MonoBehaviour
     private SpriteRenderer render;
 
     // the color will be applied to the sprite was clicked
-    private Color selectedColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+    private static Color selectedColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
 
     // direction to cast the ray for adjacent tiles
     private Vector2[] adjacentTilesDir = new Vector2[] { Vector2.up, Vector2.down, Vector2.right, Vector2.left };
@@ -74,7 +74,7 @@ public class MyTile : MonoBehaviour
                 else
                 // if the tile is already selected but you click somewhere else then deselect
                 {
-                    previousSelected.Deselect();
+                    previousSelected.GetComponent<MyTile>().Deselect();
                 }        
             }
         }
@@ -89,11 +89,11 @@ public class MyTile : MonoBehaviour
             return;
         }
         // store the new sprite you have clicked to a temporary variables
-        Sprite tempSprite = render.sprite;
+        Sprite tempSprite = render2.sprite;
         // then swap 
-        render.sprite = render2.sprite;
+        render2.sprite = render.sprite;
         // then add the new sprite to tempSprite
-        render2.sprite = tempSprite;
+        render.sprite = tempSprite;
 
         SFXManager.instance.PlaySFX(Clip.Swap);
     }
@@ -140,7 +140,7 @@ public class MyTile : MonoBehaviour
     private void ClearAllAdjacent(Vector2[] paths)
     {
         List<GameObject> matchedSprites = new List<GameObject>();
-        // add adjacent game objects to new this new list, loop through GetAdjacent
+        // add adjacent game objects to this new list, loop through GetAdjacent
         for (int i = 0; i < paths.Length; i++)
         {
             matchedSprites.AddRange(GetAdjacent(paths[i]));
@@ -157,22 +157,26 @@ public class MyTile : MonoBehaviour
         }
     }
     // clear all matches, including the previousSelected game object
-    private void ClearAllMatches()
+    public void ClearAllMatches()
     {
         // if the game over or something then
-        if (render.sprite==null || MyBoardManager.instance.IsShifting)
+        if (render.sprite==null)
         {
             return;
         }
         // clear all horizontal and vertical matches
         ClearAllAdjacent(new Vector2[2] { Vector2.up, Vector2.down });
-        ClearAllAdjacent(new Vector2[2] { Vector2.right, Vector2.left });
+        ClearAllAdjacent(new Vector2[2] { Vector2.left, Vector2.right });
         
         // and also clear the previousSelected game object, clear sound
         if(matchFound)
         {
             render.sprite = null;
-            matchFound = true;
+            matchFound = false;
+
+            StopCoroutine(MyBoardManager.instance.FindNullTiles());
+            StartCoroutine(MyBoardManager.instance.FindNullTiles());
+
             SFXManager.instance.PlaySFX(Clip.Clear);
         }
     }
