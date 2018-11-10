@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MyBoardManager : MonoBehaviour {
+public class MyBoardManager : MonoBehaviour
+{
 
     //Singleton, allows it to be called from any script
     public static MyBoardManager instance;
@@ -22,7 +23,8 @@ public class MyBoardManager : MonoBehaviour {
     public bool IsShifting { get; set; }
 
     // Use this for initialization
-    void Start() {
+    void Start()
+    {
         instance = GetComponent<MyBoardManager>();
 
         // the size of the tile
@@ -52,7 +54,7 @@ public class MyBoardManager : MonoBehaviour {
                 // instantiate the tile into the 2d array
                 GameObject newTile = Instantiate(tile, new Vector2(startX + (xOffset * x), startY + (yOffset * y)), tile.transform.rotation);
                 tiles[x, y] = newTile;
-                
+
                 // make all the instantiated tiles the children of the Board Manager game object to make the hierarchy clean
                 newTile.transform.parent = transform;
 
@@ -98,9 +100,9 @@ public class MyBoardManager : MonoBehaviour {
             }
         }
     }
-    private IEnumerator ShiftTilesDown(int x, int yStart, float delay=0.03f)
+    private IEnumerator ShiftTilesDown(int x, int yStart, float delay = 0.03f)
     {
-        IsShifting = true;    
+        IsShifting = true;
         // create a list game object to count empty spaces
         List<SpriteRenderer> renders = new List<SpriteRenderer>();
         int nullCount = 0;
@@ -109,7 +111,7 @@ public class MyBoardManager : MonoBehaviour {
         {
             // loop through and count the empty spaces
             SpriteRenderer render = tiles[x, y].GetComponent<SpriteRenderer>();
-            if(render.sprite==null)
+            if (render.sprite == null)
             {
                 nullCount++;
             }
@@ -122,34 +124,34 @@ public class MyBoardManager : MonoBehaviour {
             // wait 
             yield return new WaitForSeconds(delay);
             // loop through every sprite renderers in the list of renders
-            for (int k=0; k<renders.Count-1; k++)
+            for (int k = 0; k < renders.Count - 1; k++)
             {
                 // swap each sprite with the one above it, until the end is reached and the last sprite is set to null 
                 renders[k].sprite = renders[k + 1].sprite;
                 renders[k + 1].sprite = GetNewSprite(x, ySize - 1);
-            }       
+            }
         }
         IsShifting = false;
     }
 
     // get new sprite for the tiles shifted down
-    private Sprite GetNewSprite(int x,int y)
+    private Sprite GetNewSprite(int x, int y)
     {
         List<Sprite> possibleCharacters = new List<Sprite>();
         possibleCharacters.AddRange(characters);
         // need comment
-        if(x>0)
+        if (x > 0)
         {
             possibleCharacters.Remove(tiles[x - 1, y].GetComponent<SpriteRenderer>().sprite);
         }
         // need comment
-        if(x>xSize-1)
+        if (x < xSize - 1)
         {
             possibleCharacters.Remove(tiles[x + 1, y].GetComponent<SpriteRenderer>().sprite);
         }
 
         // need comment
-        if(y>0)
+        if (y > 0)
         {
             possibleCharacters.Remove(tiles[x, y - 1].GetComponent<SpriteRenderer>().sprite);
         }

@@ -12,7 +12,7 @@ public class MyTile : MonoBehaviour
     private static Color selectedColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
 
     // direction to cast the ray for adjacent tiles
-    private Vector2[] adjacentTilesDir = new Vector2[] { Vector2.up, Vector2.down, Vector2.right, Vector2.left };
+    private Vector2[] adjacentTilesDir = new Vector2[] { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
 
     private bool matchFound = false;
     private void Awake()
@@ -41,7 +41,7 @@ public class MyTile : MonoBehaviour
 
     private void OnMouseDown()
     {
-        // game over or at the load screen prevent player from fore-playing then not selectable
+        // game over or at the load screen prevent player from fore-playing
         if (render.sprite == null || MyBoardManager.instance.IsShifting)
         {
             return;
@@ -61,21 +61,23 @@ public class MyTile : MonoBehaviour
             }
 
             else
-            
+
             {
                 // if you swap the tile which was clicked to up,down,right or left then swap sprite
                 if (GetAllAdjacentTiles().Contains(previousSelected.gameObject))
                 {
                     SwapSprite(previousSelected.render);
                     previousSelected.ClearAllMatches();
-                    ClearAllMatches();
                     previousSelected.Deselect();
+                    ClearAllMatches();
+
                 }
                 else
                 // if the tile is already selected but you click somewhere else then deselect
                 {
                     previousSelected.GetComponent<MyTile>().Deselect();
-                }        
+                    Select();
+                }
             }
         }
     }
@@ -99,9 +101,9 @@ public class MyTile : MonoBehaviour
     }
 
     // GET ADJACENT TILES TO SWAP ONLY
-    private GameObject GetAdjacentTile(Vector2 castDir)
+    private GameObject GetAdjacentTiles(Vector2 castDir)
     {
-        // cast ray to detect an adjacent tile
+        // cast rays to 4 directions up,down,right,left to detect adjacent tiles
         RaycastHit2D hit = Physics2D.Raycast(transform.position, castDir);
         if (hit.collider != null)
         {
@@ -115,7 +117,7 @@ public class MyTile : MonoBehaviour
         List<GameObject> adjacentTiles = new List<GameObject>();
         for (int i = 0; i < adjacentTilesDir.Length; i++)
         {
-            adjacentTiles.Add(GetAdjacentTile(adjacentTilesDir[i]));
+            adjacentTiles.Add(GetAdjacentTiles(adjacentTilesDir[i]));
         }
         return adjacentTiles;
     }
@@ -128,9 +130,11 @@ public class MyTile : MonoBehaviour
         // cast ray to detect
         RaycastHit2D hit = Physics2D.Raycast(transform.position, castDir);
         // if detect a collider and it has same sprite as the previousSelected game object
-        if (hit.collider!=null && hit.collider.GetComponent<SpriteRenderer>().sprite==render.sprite)
+        while (hit.collider != null && hit.collider.GetComponent<SpriteRenderer>().sprite == render.sprite)
         {
             matchedSprites.Add(hit.collider.gameObject);
+            // the collider was being hit keep casting the ray to other adjacent tiles
+            hit = Physics2D.Raycast(hit.collider.transform.position, castDir);
         }
         // add the matchedSprite to list GetAdjacent
         return matchedSprites;
@@ -145,7 +149,7 @@ public class MyTile : MonoBehaviour
         {
             matchedSprites.AddRange(FindMatch(paths[i]));
         }
-        
+
         // if matched sprites eual or greater than 2 then clear 
         if (matchedSprites.Count >= 2) // clear the sprites and add bool matchFound
         {
@@ -160,16 +164,16 @@ public class MyTile : MonoBehaviour
     public void ClearAllMatches()
     {
         // if the game over or something then
-        if (render.sprite==null)
+        if (render.sprite == null)
         {
             return;
         }
         // clear all horizontal and vertical matches
         ClearMatch(new Vector2[2] { Vector2.up, Vector2.down });
         ClearMatch(new Vector2[2] { Vector2.left, Vector2.right });
-        
+
         // and also clear the previousSelected game object, clear sound
-        if(matchFound)
+        if (matchFound)
         {
             render.sprite = null;
             matchFound = false;
