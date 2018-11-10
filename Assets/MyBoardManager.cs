@@ -100,10 +100,11 @@ public class MyBoardManager : MonoBehaviour {
     }
     private IEnumerator ShiftTilesDown(int x, int yStart, float delay=0.03f)
     {
-        int nullCount = 0;
-        IsShifting = true;
+        IsShifting = true;    
         // create a list game object to count empty spaces
         List<SpriteRenderer> renders = new List<SpriteRenderer>();
+        int nullCount = 0;
+
         for (int y = yStart; y < ySize; y++)
         {
             // loop through and count the empty spaces

@@ -24,8 +24,8 @@ public class MyTile : MonoBehaviour
     void Select()
     {
         isSelected = true;
-        previousSelected = GetComponent<MyTile>();
-        previousSelected.render.color = selectedColor;
+        previousSelected = gameObject.GetComponent<MyTile>();
+        render.color = selectedColor;
         SFXManager.instance.PlaySFX(Clip.Select);
     }
 
@@ -41,7 +41,7 @@ public class MyTile : MonoBehaviour
 
     private void OnMouseDown()
     {
-        // game over or at the load screen prevent player from fore-playing
+        // game over or at the load screen prevent player from fore-playing then not selectable
         if (render.sprite == null || MyBoardManager.instance.IsShifting)
         {
             return;
@@ -99,9 +99,9 @@ public class MyTile : MonoBehaviour
     }
 
     // GET ADJACENT TILES TO SWAP ONLY
-    private GameObject GetAdjacentTiles(Vector2 castDir)
+    private GameObject GetAdjacentTile(Vector2 castDir)
     {
-        // cast rays to 4 directions up,down,right,left to detect adjacent tiles
+        // cast ray to detect an adjacent tile
         RaycastHit2D hit = Physics2D.Raycast(transform.position, castDir);
         if (hit.collider != null)
         {
@@ -115,13 +115,13 @@ public class MyTile : MonoBehaviour
         List<GameObject> adjacentTiles = new List<GameObject>();
         for (int i = 0; i < adjacentTilesDir.Length; i++)
         {
-            adjacentTiles.Add(GetAdjacentTiles(adjacentTilesDir[i]));
+            adjacentTiles.Add(GetAdjacentTile(adjacentTilesDir[i]));
         }
         return adjacentTiles;
     }
 
     // get the similar adjacent game objects to destroy
-    private List<GameObject> GetAdjacent(Vector2 castDir)
+    private List<GameObject> FindMatch(Vector2 castDir)
     {
         // creat a list to add similar adjacent gameobject
         List<GameObject> matchedSprites = new List<GameObject>();
@@ -137,13 +137,13 @@ public class MyTile : MonoBehaviour
     }
 
     // clear the similar adjacent game objects
-    private void ClearAllAdjacent(Vector2[] paths)
+    private void ClearMatch(Vector2[] paths)
     {
         List<GameObject> matchedSprites = new List<GameObject>();
         // add adjacent game objects to this new list, loop through GetAdjacent
         for (int i = 0; i < paths.Length; i++)
         {
-            matchedSprites.AddRange(GetAdjacent(paths[i]));
+            matchedSprites.AddRange(FindMatch(paths[i]));
         }
         
         // if matched sprites eual or greater than 2 then clear 
@@ -165,8 +165,8 @@ public class MyTile : MonoBehaviour
             return;
         }
         // clear all horizontal and vertical matches
-        ClearAllAdjacent(new Vector2[2] { Vector2.up, Vector2.down });
-        ClearAllAdjacent(new Vector2[2] { Vector2.left, Vector2.right });
+        ClearMatch(new Vector2[2] { Vector2.up, Vector2.down });
+        ClearMatch(new Vector2[2] { Vector2.left, Vector2.right });
         
         // and also clear the previousSelected game object, clear sound
         if(matchFound)
